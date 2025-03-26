@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       // Add other image hosts you use here
       {
         protocol: 'https',
+        hostname: 'encrypted-tbn0.gstatic.com',
+      },
+      {
+        protocol: 'https',
         hostname: "www.chefadora.com",
       },
       {

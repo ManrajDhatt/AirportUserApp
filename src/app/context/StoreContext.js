@@ -18,8 +18,8 @@ const StoreContext = createContext({
   cartItems: [],
   toggleLike: () => {},
   addToCart: () => {},
-  removeFromCart: () => {},
-  updateCartQuantity: () => {},
+  removeFromCart: (id) => {},
+  updateCartQuantity: (id, newQuantity) => {},
   clearCart: () => {},
   setCartItems: () => {},
   selectedProduct: null,
@@ -68,10 +68,15 @@ export function StoreProvider({ children }) {
       if (docSnapshot.exists()) {
         const currentQuantity = docSnapshot.data().quantity || 1;
         const newQuantity = currentQuantity + quantity;
-        await updateDoc(productRef, { quantity: newQuantity });
+        
+        // Optimistic update
         updatedCartItems = updatedCartItems.map((item) =>
           item.id === product.id ? { ...item, quantity: newQuantity } : item
         );
+        setCartItems(updatedCartItems);
+
+        // Background Firestore update
+        await updateDoc(productRef, { quantity: newQuantity });
       } else {
         const cartItem = {
           id: product.id,
@@ -84,13 +89,18 @@ export function StoreProvider({ children }) {
           CategoryName: product.catalogueCategoryName,
           CategoryId: product.catalogueCategoryId,
         };
-        await setDoc(productRef, cartItem);
-        updatedCartItems = [...updatedCartItems, cartItem];
-      }
 
-      setCartItems(updatedCartItems);
+        // Optimistic update
+        updatedCartItems = [...updatedCartItems, cartItem];
+        setCartItems(updatedCartItems);
+
+        // Background Firestore update
+        await setDoc(productRef, cartItem);
+      }
     } catch (error) {
       console.error("Error adding to cart:", error);
+      // Revert the optimistic update if there's an error
+      setCartItems(cartItems);
     }
   };
 
@@ -100,12 +110,49 @@ export function StoreProvider({ children }) {
       return;
     }
 
+    // Optimistic update
+    const originalCartItems = [...cartItems];
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+
     try {
       const productRef = doc(db, "Carts", user.uid, "products", id);
       await deleteDoc(productRef);
-      setCartItems((prev) => prev.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Error removing product from cart:", error);
+      // Revert to original cart items if deletion fails
+      setCartItems(originalCartItems);
+    }
+  };
+
+  const updateCartQuantity = async (id, newQuantity) => {
+    if (!user) {
+      console.error("User not authenticated");
+      return;
+    }
+
+    // Prevent negative quantities
+    if (newQuantity <= 0) {
+      await removeFromCart(id);
+      return;
+    }
+
+    // Optimistic update
+    const originalCartItems = [...cartItems];
+    setCartItems((prevItems) => 
+      prevItems.map((item) => 
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
+
+    try {
+      const productRef = doc(db, "Carts", user.uid, "products", id);
+      
+      // Background Firestore update
+      await updateDoc(productRef, { quantity: newQuantity });
+    } catch (error) {
+      console.error("Error updating cart quantity:", error);
+      // Revert to original cart items if update fails
+      setCartItems(originalCartItems);
     }
   };
 
@@ -116,6 +163,7 @@ export function StoreProvider({ children }) {
         cartItems,
         addToCart,
         removeFromCart,
+        updateCartQuantity,
         setCartItems,
         selectedProduct,
         setSelectedProduct,
