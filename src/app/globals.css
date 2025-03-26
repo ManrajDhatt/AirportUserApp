@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--background: #ffffff;
+	--foreground: #646464;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+.custom-bg-home {
+	background: hsl(222.2 84% 4.9%);
+}
+.custom-bg {
+	background-color: rgb(30 41 59 /1);
+}
+.custom-card-color {
+	background-color: rgb(15 23 42 /1);
+}
+.custom-banner-color {
+	background: linear-gradient(to right, #cb218e, #6617cb);
+}
+.custom-hover-btn {
+	background: linear-gradient(to left, #cb218e, #6617cb);
+}
+.custom-form-color {
+	background-color: rgb(55 65 81 /1);
+}
