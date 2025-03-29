@@ -21,20 +21,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/order_history/page.js"
     ],
+    "/LoginPage/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/LoginPage/page.js"
+    ],
     "/store/[storeId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/store/[storeId]/page.js"
-    ],
-    "/store/[storeId]/product/[productId]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/store/[storeId]/product/[productId]/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

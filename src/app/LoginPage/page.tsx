@@ -88,8 +88,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center bg-gray-100 px-5">
-      <div className="max-w-lg bg-white shadow-lg rounded-lg flex flex-col w-full p-8">
+    <div className="h-screen flex items-center justify-center bg-gray-100 px-5 pt-4">
+      <div className=" max-w-lg bg-white shadow-lg rounded-lg flex flex-col w-full  p-8">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800">
             {isLogin ? "Login to Flyair" : "Register on Flyair"}

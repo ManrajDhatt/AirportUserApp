@@ -7,6 +7,7 @@ import { db } from "../../lib/firebase";
 import { collection, addDoc, doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { BsTrash } from "react-icons/bs";
 import { getAuth } from "firebase/auth";
+import PlaceOrderButton from "@/app/component/PlaceOrder";
 
 interface Product {
   id: string;
@@ -36,9 +37,12 @@ const CartPage = () => {
     setIsMounted(true);
   }, []);
 
+  // const parsePrice = (price?: string | number) => 
+  //   typeof price === "string" ? Number(price.replace("₹", "").trim()) : price || 0;
   const parsePrice = (price?: string | number) => 
-    typeof price === "string" ? Number(price.replace("₹", "").trim()) : price || 0;
-
+    typeof price === "string" 
+        ? Number(price.replace(/₹|,/g, "").trim()) // Remove ₹ and ,
+        : price || 0;
   const subtotal = cartItems.reduce(
     (sum: number, product: Product) => sum + parsePrice(product.price) * product.quantity,
     0
@@ -59,105 +63,105 @@ const CartPage = () => {
     }
   };
 
-  const handlePlaceOrder = async () => {
-    if (isLoading) return;
-    setIsLoading(true);
+  // const handlePlaceOrder = async () => {
+  //   if (isLoading) return;
+  //   setIsLoading(true);
 
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
+  //   try {
+  //     const auth = getAuth();
+  //     const user = auth.currentUser;
 
-      if (!user) {
-        alert("Please log in to place an order.");
-        setIsLoading(false);
-        return;
-      }
+  //     if (!user) {
+  //       alert("Please log in to place an order.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
 
-      if (cartItems.length === 0) {
-        alert("Your cart is empty.");
-        setIsLoading(false);
-        return;
-      }
+  //     if (cartItems.length === 0) {
+  //       alert("Your cart is empty.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
 
-      if (!navigator.geolocation) {
-        alert("Geolocation is not supported by your browser.");
-        setIsLoading(false);
-        return;
-      }
+  //     if (!navigator.geolocation) {
+  //       alert("Geolocation is not supported by your browser.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
 
-      const getLocation = () => {
-        return new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-      };
+  //     const getLocation = () => {
+  //       return new Promise<GeolocationPosition>((resolve, reject) => {
+  //         navigator.geolocation.getCurrentPosition(resolve, reject);
+  //       });
+  //     };
 
-      const position = await getLocation();
-      const { latitude, longitude } = position.coords;
+  //     const position = await getLocation();
+  //     const { latitude, longitude } = position.coords;
 
-      const storesMap: Record<string, Product[]> = {};
-      cartItems.forEach((product: Product) => {
-        if (!product.storeId) {
-          console.error("Store ID is undefined for product:", product);
-          return;
-        }
-        if (!storesMap[product.storeId]) {
-          storesMap[product.storeId] = [];
-        }
-        storesMap[product.storeId].push(product);
-      });
+  //     const storesMap: Record<string, Product[]> = {};
+  //     cartItems.forEach((product: Product) => {
+  //       if (!product.storeId) {
+  //         console.error("Store ID is undefined for product:", product);
+  //         return;
+  //       }
+  //       if (!storesMap[product.storeId]) {
+  //         storesMap[product.storeId] = [];
+  //       }
+  //       storesMap[product.storeId].push(product);
+  //     });
 
-      const orderPromises = Object.entries(storesMap).map(async ([storeId, products]) => {
-        const orderRef = await addDoc(collection(db, "Orders"), {
-          createdAt: serverTimestamp(),
-          userId: user.uid,
-          storeId,
-          status: "pending",
-          location: { latitude, longitude },
-        });
+  //     const orderPromises = Object.entries(storesMap).map(async ([storeId, products]) => {
+  //       const orderRef = await addDoc(collection(db, "Orders"), {
+  //         createdAt: serverTimestamp(),
+  //         userId: user.uid,
+  //         storeId,
+  //         status: "pending",
+  //         location: { latitude, longitude },
+  //       });
 
-        const orderID = orderRef.id;
+  //       const orderID = orderRef.id;
 
-        for (const product of products) {
-          if (!product.id) {
-            console.error("Product ID is undefined for:", product);
-            continue;
-          }
-          const productRef = doc(db, "Orders", orderID, "products", product.id);
-          await setDoc(productRef, {
-            name: product.catalogueProductName || product.name,
-            price: product.price || "0",
-            quantity: product.quantity || 1,
-            id: product.id,
-            productImageUrl: product.productImageUrl,
-          });
-        }
-      });
+  //       for (const product of products) {
+  //         if (!product.id) {
+  //           console.error("Product ID is undefined for:", product);
+  //           continue;
+  //         }
+  //         const productRef = doc(db, "Orders", orderID, "products", product.id);
+  //         await setDoc(productRef, {
+  //           name: product.catalogueProductName || product.name,
+  //           price: product.price || "0",
+  //           quantity: product.quantity || 1,
+  //           id: product.id,
+  //           productImageUrl: product.productImageUrl,
+  //         });
+  //       }
+  //     });
 
-      await Promise.all(orderPromises);
+  //     await Promise.all(orderPromises);
 
-      // Attempt to clear cart with multiple fallbacks
-      try {
-        if (clearCart && typeof clearCart === 'function') {
-          await clearCart();
-        } else {
-          console.warn('clearCart not available, using fallback');
-          await fallbackClearCart();
-        }
-      } catch (clearError) {
-        console.error('Error clearing cart:', clearError);
-        await fallbackClearCart();
-      }
+  //     // Attempt to clear cart with multiple fallbacks
+  //     try {
+  //       if (clearCart && typeof clearCart === 'function') {
+  //         await clearCart();
+  //       } else {
+  //         console.warn('clearCart not available, using fallback');
+  //         await fallbackClearCart();
+  //       }
+  //     } catch (clearError) {
+  //       console.error('Error clearing cart:', clearError);
+  //       await fallbackClearCart();
+  //     }
 
-      alert("Orders placed successfully!");
-      router.push("/order_history");
+  //     alert("Orders placed successfully!");
+  //     router.push("/order_history");
 
-    } catch (error) {
-      console.error("Error placing order:", error);
-      alert("Something went wrong while placing your order. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //   } catch (error) {
+  //     console.error("Error placing order:", error);
+  //     alert("Something went wrong while placing your order. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
   
   if (!isMounted) return null;
 
@@ -263,8 +267,8 @@ const CartPage = () => {
                   <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
-              <button
-                onClick={handlePlaceOrder}
+              {/* <button
+                onClick={PlaceOrderButton}
                 disabled={isLoading}
                 className={`w-full mt-6 py-3 rounded-md transition-colors ${
                   isLoading 
@@ -273,7 +277,8 @@ const CartPage = () => {
                 }`}
               >
                 {isLoading ? "Processing..." : "Place Order"}
-              </button>
+              </button> */}
+              <PlaceOrderButton/>
             </div>
           </div>
         )}

@@ -10,6 +10,7 @@
 		transparent 65%
 	),
 	white; /* Keeps the rest of the area white */
-	height: 100vh; /* Full viewport height */
+	/* height: 100px; */
+	 /* Full viewport height */
 	margin: 0;
 }
