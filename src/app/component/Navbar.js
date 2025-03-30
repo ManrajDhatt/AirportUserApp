@@ -225,9 +225,9 @@ const Navbar = () => {
                 {isLoggedIn ? (
                   <>
                     <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Dashboard</a></li>
-                    <li><a href="#" className="block px-4 py-2 hover:bg-gray-100">Settings</a></li>
-                    <li><a href="#" className="block px-4 py-2 hover:bg-gray-100">Earnings</a></li>
-                    <li><button onClick={handleAuthAction} className="block w-full text-left px-4 py-2 hover:bg-gray-100">Logout</button></li>
+                    <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Settings</a></li>
+                    <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Earnings</a></li>
+                    <li><button onClick={handleAuthAction} className="block w-full text-center px-4 py-2 hover:bg-gray-100">Logout</button></li>
                   </>
                 ) : (
                   <li><button onClick={handleAuthAction} className="block w-full  px-4 py-2 text-center hover:bg-gray-100">Login</button></li>
