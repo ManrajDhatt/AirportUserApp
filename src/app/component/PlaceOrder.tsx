@@ -174,7 +174,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/app/lib/firebase";
-import { collection, addDoc, doc, setDoc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, doc, setDoc, Timestamp, writeBatch } from "firebase/firestore";
 import { Eye, EyeOff } from "lucide-react";
 import { useStore } from "@/app/context/StoreContext";
 
@@ -284,38 +284,93 @@ export default function PlaceOrderButton() {
     //       storeId:item.storeId
     //     });
     //   }
-    try {
-      const storeGroups = cartItems.reduce((acc: Record<string, typeof cartItems>, item) => {
-        if (!acc[item.storeId]) {
-          acc[item.storeId] = [];
-        }
-        acc[item.storeId].push(item);
-        return acc;
-      }, {});
-    
-      for (const storeId in storeGroups) {
-        const orderRef = await addDoc(collection(db, "Orders"), {
-          userId: user.uid,
-          createdAt: Timestamp.now(),
-          status: "pending",
-          location: { latitude, longitude },
-          storeId: storeId
-        });
-    
-        for (const item of storeGroups[storeId]) {
-          await setDoc(doc(db, "Orders", orderRef.id, "products", item.id), {
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            productImageUrl: item.productImageUrl,
-            storeId: item.storeId
-          });
-        }
-      }
-    
-    
 
+
+
+
+    // try {
+    //   const storeGroups = cartItems.reduce((acc: Record<string, typeof cartItems>, item) => {
+    //     if (!acc[item.storeId]) {
+    //       acc[item.storeId] = [];
+    //     }
+    //     acc[item.storeId].push(item);
+    //     return acc;
+    //   }, {});
+    
+    //   for (const storeId in storeGroups) {
+    //     const orderRef = await addDoc(collection(db, "Orders"), {
+    //       userId: user.uid,
+    //       createdAt: Timestamp.now(),
+    //       status: "pending",
+    //       location: { latitude, longitude },
+    //       storeId: storeId
+    //     });
+    
+    //     for (const item of storeGroups[storeId]) {
+    //       await setDoc(doc(db, "Orders", orderRef.id, "products", item.id), {
+    //         id: item.id,
+    //         name: item.name,
+    //         price: item.price,
+    //         quantity: item.quantity,
+    //         productImageUrl: item.productImageUrl,
+    //         storeId: item.storeId
+    //       });
+    //     }
+    //   }
+    try {
+  const batch = writeBatch(db);
+
+  // Create the parent order document
+  const orderRef = doc(collection(db, "Orders"));
+  batch.set(orderRef, {
+    userId: user.uid,
+    createdAt: Timestamp.now(),
+    
+    status: "pending", // Overall order status
+    location: { latitude, longitude },
+    storeStatuses: {}, // Will track status by store
+  });
+
+  // Group cart items by store
+  const itemsByStore: Record<string, typeof cartItems> = {};
+  for (const item of cartItems) {
+    if (!itemsByStore[item.storeId]) {
+      itemsByStore[item.storeId] = [];
+    }
+    itemsByStore[item.storeId].push(item);
+  }
+
+  // Create a sub-order for each store
+  for (const storeId in itemsByStore) {
+    const storeOrderRef = doc(collection(db, "Orders", orderRef.id, "StoreOrders"));
+    batch.set(storeOrderRef, {
+      storeId: storeId,
+      status: "pending",
+      createdAt: Timestamp.now(),
+    });
+
+    // Update the parent order's storeStatuses
+    batch.update(orderRef, {
+      [`storeStatuses.${storeId}`]: "pending",
+    });
+
+    // Add products for this store to the sub-order
+    for (const item of itemsByStore[storeId]) {
+      const productRef = doc(db, "Orders", orderRef.id, "StoreOrders", storeOrderRef.id, "products", item.id);
+      batch.set(productRef, {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        productImageUrl: item.productImageUrl,
+        storeId: item.storeId,
+      });
+    }
+  }
+
+  // Commit the batch write
+      await batch.commit();
+  // console.log("Order successfully created");
       clearCart();
       toast.success("Order placed successfully!", { autoClose: 500 });
 

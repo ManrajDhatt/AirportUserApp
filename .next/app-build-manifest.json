@@ -25,16 +25,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/order_history/page.js"
-    ],
-    "/store/[storeId]/product/[productId]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/store/[storeId]/product/[productId]/page.js"
-    ],
-    "/LoginPage/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/LoginPage/page.js"
     ]
   }
 }
