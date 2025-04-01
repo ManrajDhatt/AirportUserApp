@@ -11,20 +11,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
-    "/store/[storeId]/page": [
+    "/order_history/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/store/[storeId]/page.js"
+      "static/chunks/app/order_history/page.js"
     ],
     "/store/Cart/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/store/Cart/page.js"
-    ],
-    "/order_history/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/order_history/page.js"
     ]
   }
 }

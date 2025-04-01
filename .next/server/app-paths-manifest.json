@@ -1,6 +1,4 @@
 {
-  "/page": "app/page.js",
-  "/store/[storeId]/page": "app/store/[storeId]/page.js",
-  "/store/Cart/page": "app/store/Cart/page.js",
-  "/order_history/page": "app/order_history/page.js"
+  "/order_history/page": "app/order_history/page.js",
+  "/store/Cart/page": "app/store/Cart/page.js"
 }

@@ -231,7 +231,9 @@ export function StoreProvider({ children }) {
           id: product.id,
           name: product.catalogueProductName,
           // price: parseFloat(product.price.replace("$", "")) || 0,
+          
           price: parseFloat(product.price.replace(/[$,]/g, "")) || 0,
+          // price: parseFloat(String(product.price).replace(/[$,]/g, "")) || 0,
 
           storeId: storeId,
           quantity,
