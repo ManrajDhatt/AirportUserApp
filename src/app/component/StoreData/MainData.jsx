@@ -1,3 +1,4 @@
+
 // "use client";
 
 // import React, { useEffect, useState } from "react";
@@ -21,7 +22,8 @@
 // 			setLoading(true);
 // 			getCategoriesForStore(storeId)
 // 				.then((categoriesData) => setCategories(categoriesData))
-// 				.catch(() => setError("Failed to load categories"))
+// 				.catch(() =>	 setError("categories"))
+// //  setError("Failed to load categories"))
 // 				.finally(() => setLoading(false));
 // 		}
 // 	}, [storeId]);
@@ -34,10 +36,12 @@
 // 					const allProducts = await Promise.all(
 // 						categories.map((category) => getProductsForCategory(storeId, category.id))
 // 					);
-// 					setProducts(allProducts.flat());
-// 					setFilteredProducts(allProducts.flat()); // Show all products initially
+// 					const flatProducts = allProducts.flat();
+// 					setProducts(flatProducts);
+// 					setFilteredProducts(flatProducts); // Show all products initially
 // 				} catch {
-// 					setError("Failed to load products");
+// 					setError("products");
+// 					// setError("Failed to load products");
 // 				} finally {
 // 					setLoading(false);
 // 				}
@@ -46,15 +50,17 @@
 // 		}
 // 	}, [categories, storeId]);
 
+// 	//  FIXED FILTER FUNCTION
 // 	const filterByCategory = (categoryId) => {
 // 		if (categoryId === "all") {
 // 			setFilteredProducts(products);
-// 			setSelectedCategory("all");
 // 		} else {
-// 			const filtered = products.filter((product) => product.categoryId === categoryId);
+// 			const filtered = products.filter(
+// 				(product) => String(product.catalogueCategoryName) === String(categoryId)
+// 			);
 // 			setFilteredProducts(filtered);
-// 			setSelectedCategory(categoryId);
 // 		}
+// 		setSelectedCategory(categoryId);
 // 	};
 
 // 	if (loading) return <div className="text-center py-10">Loading...</div>;
@@ -68,11 +74,11 @@
 // 				<select
 // 					value={selectedCategory}
 // 					onChange={(e) => filterByCategory(e.target.value)}
-// 					className="text-white px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition cursor-pointer"
+// 					className="w-48 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring focus:ring-blue-300 focus:border-blue-500 bg-white text-gray-700 cursor-pointer"
 // 				>
 // 					<option value="all">All Categories</option>
-// 					{categories.map((category, index) => (
-// 						<option key={index} value={category.id}>
+// 					{categories.map((category) => (
+// 						<option key={category.id} value={category.catalogueCategoryName}>
 // 							{category.catalogueCategoryName || category.name || "Unknown Category"}
 // 						</option>
 // 					))}
@@ -85,21 +91,20 @@
 
 // 			{/* Responsive Grid */}
 // 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-// 				{filteredProducts.map((product, index) => (
-// 					<Cards key={index} product={product} storeId={storeId} />
+// 				{filteredProducts.map((product) => (
+// 					<Cards key={product.id} product={product} storeId={storeId} />
 // 				))}
 // 			</div>
 // 		</div>
 // 	);
 // }
-
-
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { getCategoriesForStore, getProductsForCategory } from "../firebaseUtil";
 import Cards from "../Cards";
+import NoInternet from "../NoInternet"; // Import the NoInternet component
 
 export default function MainData() {
 	const params = useParams();
@@ -117,7 +122,7 @@ export default function MainData() {
 			setLoading(true);
 			getCategoriesForStore(storeId)
 				.then((categoriesData) => setCategories(categoriesData))
-				.catch(() => setError("Failed to load categories"))
+				.catch(() => setError("categories"))
 				.finally(() => setLoading(false));
 		}
 	}, [storeId]);
@@ -134,7 +139,7 @@ export default function MainData() {
 					setProducts(flatProducts);
 					setFilteredProducts(flatProducts); // Show all products initially
 				} catch {
-					setError("Failed to load products");
+					setError("products");
 				} finally {
 					setLoading(false);
 				}
@@ -156,8 +161,9 @@ export default function MainData() {
 		setSelectedCategory(categoryId);
 	};
 
+	// Show NoInternet component if there's an error
 	if (loading) return <div className="text-center py-10">Loading...</div>;
-	if (error) return <div className="text-center text-red-500">{error}</div>;
+	if (error) return <NoInternet />; // 🚀 Call NoInternet when error exists
 
 	return (
 		<div className="p-6">
