@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { auth, db } from "@/app/lib/firebase";
+import { collection, addDoc, doc, setDoc, Timestamp, writeBatch } from "firebase/firestore";
 
 const FeedbackPage = () => {
   const [name, setName] = useState("");
@@ -8,25 +10,38 @@ const FeedbackPage = () => {
   const [feedback, setFeedback] = useState("");
   const [rating, setRating] = useState(1);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (name && email && feedback) {
-      // Normally, you would send this to Firebase or an API endpoint
-      toast.success("Feedback submitted successfully!");
-      
-      // Clear form after submission
-      setName("");
-      setEmail("");
-      setFeedback("");
-      setRating(1);
+      try {
+        // Store feedback in Firestore
+        await addDoc(collection(db, "feedbacks"), {
+          name,
+          email,
+          feedback,
+          rating,
+          createdAt: Timestamp.now(), // Store timestamp
+        });
+
+        toast.success("Feedback submitted successfully!");
+
+        // Clear form after submission
+        setName("");
+        setEmail("");
+        setFeedback("");
+        setRating(1);
+      } catch (error) {
+        console.error("Error submitting feedback:", error);
+        toast.error("Failed to submit feedback. Try again later.");
+      }
     } else {
       toast.error("Please fill in all fields.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-20 px-6 ">
+    <div className="min-h-screen bg-gray-100 py-20 px-6">
       <h1 className="text-3xl font-bold text-center mb-8">We Value Your Feedback</h1>
 
       <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">

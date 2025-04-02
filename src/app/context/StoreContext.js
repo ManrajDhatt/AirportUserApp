@@ -12,7 +12,7 @@
 // } from "firebase/firestore";
 // import { onAuthStateChanged } from "firebase/auth";
 
-// // ✅ Provide default values to avoid `undefined` errors
+// // ✅ Provide default values to avoid undefined errors
 // const StoreContext = createContext({
 //   likedItems: [],
 //   cartItems: [],
@@ -174,7 +174,7 @@
 //   );
 // }
 
-// // ✅ Always check if `StoreProvider` is used before calling `useStore`
+// // ✅ Always check if StoreProvider is used before calling useStore
 // export const useStore = () => {
 //   const context = useContext(StoreContext);
 //   if (!context) {
@@ -231,9 +231,7 @@ export function StoreProvider({ children }) {
           id: product.id,
           name: product.catalogueProductName,
           // price: parseFloat(product.price.replace("$", "")) || 0,
-          
           price: parseFloat(product.price.replace(/[$,]/g, "")) || 0,
-          // price: parseFloat(String(product.price).replace(/[$,]/g, "")) || 0,
 
           storeId: storeId,
           quantity,

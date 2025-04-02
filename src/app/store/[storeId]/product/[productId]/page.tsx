@@ -8,6 +8,7 @@ import { toast } from "react-toastify"
 import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { db } from "@/app/lib/firebase"
 import { BsCartDash, BsCartPlus } from "react-icons/bs"
+import PlaceOrderButton from "@/app/component/PlaceOrder";
 
 interface Product {
   name: string;
@@ -36,15 +37,13 @@ interface CartItem {
 export default function Page() {
   const params = useParams();
   const { storeId, productId } = params as { storeId: string; productId: string };
-  const { selectedProduct } = useStore();
+  const { selectedProduct, addToCart, cartItems, removeFromCart, setCartItems } = useStore();
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("categoryId");
-  const { addToCart, cartItems, removeFromCart, setCartItems } = useStore();
   const isInCart = cartItems.some((item: CartItem) => item.id === productId);
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-
   const router = useRouter();
 
   useEffect(() => {
@@ -62,69 +61,8 @@ export default function Page() {
   if (loading) return <p className="p-10">Loading...</p>;
   if (!product) return <p className="p-10">Product not found</p>;
 
-  const handleBuyNow = async () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-    if (!user?.uid) {
-      toast.error("Please log in to place an order.");
-      return;
-    }
-
-    if (!product) {
-      toast.error("No product details available.");
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-
-        try {
-          const ordersCollectionRef = collection(db, "Orders");
-          const orderRef = await addDoc(ordersCollectionRef, {
-            userId: user.uid,
-            createdAt: serverTimestamp(),
-            location: { latitude, longitude },
-            storeId: storeId,
-            status: "pending",
-          });
-
-          const orderId = orderRef.id;
-          const storeRef = doc(db, "Orders", orderId);
-          const productRef = doc(storeRef, "products", productId);
-          await setDoc(productRef, {
-            id: productId,
-            name: product.catalogueProductName,
-            price: parseFloat(product.price.replace(/[^0-9.]/g, "")),
-            productImageUrl: product.productImageUrl,
-            quantity: quantity,
-          });
-
-          toast.success("Order placed successfully!");
-          router.push("/");
-        } catch (error) {
-          console.error("Error placing order:", error);
-          toast.error("Failed to place order. Please try again.");
-        }
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        toast.error("Failed to get location. Please enable location services.");
-      }
-    );
-  };
-
   const handleCartToggle = async () => {
-    if (!product || !product.id || !product.catalogueProductName || !product.price || !product.productImageUrl) {
-      console.error("Missing required product fields:", product);
-      return;
-    }
-
+    if (!product) return;
     const newItem = {
       id: product.id,
       catalogueProductName: product.catalogueProductName,
@@ -148,7 +86,6 @@ export default function Page() {
 
   return (
     <div className="bg-white text-gray-900 min-h-screen">
-      {/* Breadcrumb */}
       <div className="py-6 px-20 flex items-center gap-2 text-gray-500 text-sm">
         <p>Home</p> <ArrowRight size={14} />
         <p>Store</p> <ArrowRight size={14} />
@@ -156,14 +93,11 @@ export default function Page() {
         <p className="font-semibold">{product.catalogueProductName}</p>
       </div>
 
-      {/* Product Section */}
       <div className="px-20 py-8 flex gap-12">
-        {/* Image Section */}
         <div className="w-[40%] flex justify-center">
           <img src={product.productImageUrl} alt={product.catalogueProductName} className="rounded-lg w-[400px] h-[400px] object-cover" />
         </div>
 
-        {/* Product Details */}
         <div className="flex-grow p-6 bg-gray-100 shadow-md rounded-lg">
           <h2 className="text-3xl font-bold">{product.catalogueProductName}</h2>
           <p className="text-gray-600 mt-1">{product.productDescription || "No description available"}</p>
@@ -181,38 +115,18 @@ export default function Page() {
 
           <div className="flex items-center justify-between mt-6">
             <p className="text-3xl font-bold text-green-600">{product.price}</p>
-            <div className="flex items-center border border-gray-300 px-4 py-2 rounded-lg">
-              <Minus size={20} className="cursor-pointer" onClick={handleDecreaseQuantity} />
-              <p className="text-lg">{quantity}</p>
-              <Plus size={20} className="cursor-pointer" onClick={handleIncreaseQuantity} />
+            <div className="flex items-center border border-gray-300 rounded-xl">
+              <button className="p-3 bg-transparent rounded-l-xl hover:bg-gray-100" onClick={handleDecreaseQuantity}><Minus size={18} /></button>
+              <p className="text-lg font-semibold px-4">{quantity}</p>
+              <button className="p-3 bg-transparent rounded-r-xl hover:bg-gray-100" onClick={handleIncreaseQuantity}><Plus size={18} /></button>
             </div>
           </div>
 
           <div className="mt-6 flex gap-4">
-		  <button
-  className="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-all"
-  onClick={handleBuyNow}
->
-  Buy Now
-</button>
-
-			<button
-  className={`px-6 py-2 rounded-lg ${isInCart ? "bg-red-600" : "bg-blue-600"} text-white flex items-center gap-2`}
-  onClick={handleCartToggle}
->
-  {isInCart ? (
-    <>
-      <BsCartDash className="text-2xl" />
-      <span className="hidden lg:inline">Remove from Cart</span>
-    </>
-  ) : (
-    <>
-      <BsCartPlus className="text-2xl" />
-      <span className="hidden lg:inline">Add to Cart</span>
-    </>
-  )}
-</button>
-
+            <PlaceOrderButton />
+            <button className={`px-6 py-2 rounded-lg ${isInCart ? "bg-red-600" : "bg-blue-600"} text-white flex items-center gap-2`} onClick={handleCartToggle}>
+              {isInCart ? <><BsCartDash className="text-2xl" /><span>Remove from Cart</span></> : <><BsCartPlus className="text-2xl" /><span>Add to Cart</span></>}
+            </button>
           </div>
         </div>
       </div>
