@@ -30,6 +30,6 @@
 		"src/app/component/StoreData/FilterSideBar.tsx",
 		"src/app/component/firebaseUtil.js",
 		"src/app/component/StoreData/MainData.jsx"
-, "src/app/component/FeaturedProduct.js", "src/app/context/StoreContext.js", "src/app/component/StickyCartBanner.tsx"	],
+, "src/app/component/FeaturedProduct.js", "src/app/context/StoreContext.js", "src/app/component/StickyCartBanner.tsx", "src/app/component/BuyNowButton.tsx"	],
 	"exclude": ["node_modules"]
 }

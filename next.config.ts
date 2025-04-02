@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "encrypted-tbn0.gstatic.com" },
+      { protocol: "https", hostname: "static.zara.net" },
       { protocol: "https", hostname: "www.chefadora.com" },
       { protocol: "https", hostname: "www.imagineonline.store" },
     ],
