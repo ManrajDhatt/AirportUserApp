@@ -1,61 +1,139 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiMenu, FiX, FiChevronDown, FiShoppingBag } from "react-icons/fi";
+import { db } from "@/app/lib/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import Link from "next/link";
 
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+// Define Store & Category Types
+type Store = {
+  storeId: string;
+  name: string;
+  category: string;
+};
+
+type Category = {
+  name: string;
+  image: string;
+};
+
+export default function Sidebar() {
+  const [open, setOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [stores, setStores] = useState<Record<string, Store[]>>({});
+  const [submenuOpen, setSubmenuOpen] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const categoryImages: Record<string, string> = {
+        Phones: "/images/airport_images/iphone16_PNG17.png",
+        Jewellery: "/images/airport_images/91-917122_imitation-jewellery-transparent-images-png-royalty-emitesan-jewellery.png",
+        Clothes: "/images/airport_images/IMG_8215.webp",
+        Shoes: "/images/airport_images/shoes.png",
+        Watches: "/images/airport_images/watches.png",
+        Food: "/images/airport_images/ffoodd.jpg",
+      };
+
+      const storeSnapshot = await getDocs(collection(db, "stores"));
+      const uniqueCategories = [...new Set(storeSnapshot.docs.map((doc) => doc.data().category))].map((category) => ({
+        name: category,
+        image: categoryImages[category] || "/images/default.png",
+      }));
+
+      setCategories(uniqueCategories);
+    };
+
+    fetchCategories();
+  }, []);
+
+  const fetchStoresForCategory = async (category: string) => {
+    if (stores[category]) return;
+
+    const storeQuery = query(collection(db, "stores"), where("category", "==", category));
+    const storeSnapshot = await getDocs(storeQuery);
+
+    const storeList: Store[] = storeSnapshot.docs.map((doc) => ({
+      storeId: doc.id,
+      ...(doc.data() as Store),
+    }));
+
+    setStores((prev) => ({ ...prev, [category]: storeList }));
+  };
+
+  const toggleSubmenu = async (category: string) => {
+    if (!submenuOpen[category]) {
+      await fetchStoresForCategory(category);
+    }
+    setSubmenuOpen((prev) => ({ ...prev, [category]: !prev[category] }));
+  };
 
   return (
     <>
       {/* Sidebar Toggle Button */}
       <button
-        className="p-2 m-2 bg-gray-800 text-white rounded fixed top-4 left-4 z-50"
-        onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle Sidebar"
+        onClick={() => setOpen(!open)}
+        className="fixed top-5 left-5 z-50 text-2xl text-white bg-gray-900 p-2 rounded-full shadow-lg"
       >
-        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        {open ? <FiX /> : <FiMenu />}
       </button>
 
-      {/* Backdrop when Sidebar is Open */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black opacity-50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      {/* Sidebar Overlay */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed inset-0 bg-white text-black w-80 h-full shadow-lg p-6 flex flex-col z-40 overflow-y-auto"
+          >
+            <h2 className="text-lg font-bold mb-4">Categories</h2>
+            <ul className="space-y-4">
+              {categories.map((category) => (
+                <li key={category.name}>
+                  {/* Category Item */}
+                  <div
+                    className="flex items-center gap-3 cursor-pointer p-3 hover:bg-gray-200 rounded-lg transition"
+                    onClick={() => toggleSubmenu(category.name)}
+                  >
+                    <img src={category.image} alt={category.name} className="w-8 h-8 rounded-full" />
+                    <span className="font-medium">{category.name}</span>
+                    <FiChevronDown
+                      className={`ml-auto transition-transform ${submenuOpen[category.name] ? "rotate-180" : ""}`}
+                    />
+                  </div>
 
-      {/* Sidebar */}
-      <motion.div
-        initial={{ x: "-100%" }}
-        animate={{ x: isOpen ? 0 : "-100%" }}
-        exit={{ x: "-100%" }}
-        transition={{ type: "spring", stiffness: 200, damping: 20 }}
-        className="fixed top-0 left-0 w-64 h-screen bg-gray-900 text-white shadow-lg z-50"
-      >
-        <div className="p-4">
-          <h2 className="text-xl font-bold">Dashboard</h2>
-
-          <ul className="mt-4 space-y-2">
-            <li className="p-2 hover:bg-gray-700 rounded">
-              <Link href="/" onClick={() => setIsOpen(false)}>Home</Link>
-            </li>
-            <li className="p-2 hover:bg-gray-700 rounded">
-              <Link href="/orders" onClick={() => setIsOpen(false)}>Orders</Link>
-            </li>
-            <li className="p-2 hover:bg-gray-700 rounded">
-              <Link href="/products" onClick={() => setIsOpen(false)}>Products</Link>
-            </li>
-            <li className="p-2 hover:bg-gray-700 rounded">
-              <Link href="/customers" onClick={() => setIsOpen(false)}>Customers</Link>
-            </li>
-          </ul>
-        </div>
-      </motion.div>
+                  {/* Stores Dropdown */}
+                  <AnimatePresence>
+                    {submenuOpen[category.name] && (
+                      <motion.ul
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pl-6 mt-2 space-y-2"
+                      >
+                        {stores[category.name]?.length > 0 ? (
+                          stores[category.name].map((store) => (
+                            <li key={store.storeId} className="py-2 px-4 hover:bg-gray-300 rounded-md">
+                              <Link href={`/store/${store.storeId}`} className="flex items-center gap-2">
+                                <FiShoppingBag /> {store.name}
+                              </Link>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="py-2 px-4 text-gray-500">No stores available.</li>
+                        )}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
-};
-
-export default Sidebar;
+}

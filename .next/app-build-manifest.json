@@ -15,21 +15,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/store/[storeId]/page.js"
-    ],
-    "/store/Cart/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/store/Cart/page.js"
-    ],
-    "/store/[storeId]/product/[productId]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/store/[storeId]/product/[productId]/page.js"
-    ],
-    "/order_history/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/order_history/page.js"
     ]
   }
 }
