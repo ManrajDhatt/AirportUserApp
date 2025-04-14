@@ -16,15 +16,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/order_history/page.js"
     ],
+    "/order_history/feedbacktrack/[orderid]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/order_history/feedbacktrack/[orderid]/page.js"
+    ],
     "/store/[storeId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/store/[storeId]/page.js"
     ],
-    "/order_history/feedbacktrack/[orderid]/page": [
+    "/store/Cart/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/order_history/feedbacktrack/[orderid]/page.js"
+      "static/chunks/app/store/Cart/page.js"
     ]
   }
 }

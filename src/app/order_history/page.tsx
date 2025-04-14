@@ -691,10 +691,34 @@ const OrderHistoryPage = () => {
                       {order.createdAt}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Order #{order.id.substring(0, 8)}</p>
-                  </div>
-                  <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor(order.status)}`}>
+                    <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor(order.status)}`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </div>
+                  
+                  </div>
+                  {order.status === "picked" && (
+  <motion.button
+    
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={() => {
+      const qrData = JSON.stringify({
+        orderId: order.id,
+        action: "markDelivered"
+      });
+      setQrModalData({
+        isOpen: true,
+        orderId: order.id,
+        qrData
+      });
+    }}
+    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center "
+  >
+    <QrCodeIcon className="w-4 h-4 mr-2" />
+    Show QR
+  </motion.button>
+)}
+                 
                 </div>
 
                 <div className="my-4 border-t border-dashed border-gray-200 pt-4">
@@ -781,28 +805,7 @@ const OrderHistoryPage = () => {
 
                   </div>
       
-   {order.status === "picked" && (
-  <motion.button
-    
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    onClick={() => {
-      const qrData = JSON.stringify({
-        orderId: order.id,
-        action: "markDelivered"
-      });
-      setQrModalData({
-        isOpen: true,
-        orderId: order.id,
-        qrData
-      });
-    }}
-    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center "
-  >
-    <QrCodeIcon className="w-4 h-4 mr-2" />
-    Show QR
-  </motion.button>
-)}
+   
 
                   <motion.button
                     whileHover={{ scale: 1.05 }}
