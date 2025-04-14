@@ -69,41 +69,23 @@ const Navbar = () => {
         <Link href="/" className="hover:text-[#7C85F6] transition text-black text-lg font-medium">Home</Link>
 
         {/* Feedback Dropdown */}
-        <div className="relative" ref={feedbackDropdownRef}>
-          <button
-            className="hover:text-[#7C85F6] transition text-black text-lg font-medium"
-            onMouseEnter={() => setIsFeedbackDropdownOpen(true)} // on hover, open feedback dropdown
-            onMouseLeave={() => setIsFeedbackDropdownOpen(false)} // on mouse leave, close feedback dropdown
-          >
-            Feedback
-          </button>
-          {isFeedbackDropdownOpen && (
-            <div
-              className="absolute top-full left-0 bg-white shadow-lg rounded-lg py-2 w-48"
-              onMouseEnter={() => setIsFeedbackDropdownOpen(true)}
-              onMouseLeave={() => setIsFeedbackDropdownOpen(false)}
-            >
-              {/* Feedback Dropdown Links */}
-              <Link href="/Feedback" className="block px-4 py-2 hover:bg-gray-100">Feedback Form</Link>
-              <Link href="/RateUs" className="block px-4 py-2 hover:bg-gray-100">Rate Us</Link>
-              <Link href="/Contact" className="block px-4 py-2 hover:bg-gray-100">Contact Us</Link>
-            </div>
-          )}
-        </div>
+        <Link href="/Contact" className="hover:text-[#7C85F6] transition text-black text-lg font-medium">Contact</Link>
+
 
         <Link href="/order_history" className="hover:text-[#7C85F6] transition text-black text-lg font-medium">Orders</Link>
       </div>
 
       <div className="flex items-center space-x-4">
+
         <Link href="/store/Cart">
           <div className="relative cursor-pointer">
             {cartItems.length > 0 ? (
-              <BsCartPlusFill className="text-xl text-blue-500" />
+              <BsCartPlusFill className="text-xl text-gray-500" />
             ) : (
               <BsCartPlus className="text-xl text-gray-700" />
             )}
             {cartItems.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full px-1">
+              <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full px-1">
                 {cartItems.length}
               </span>
             )}
@@ -117,7 +99,8 @@ const Navbar = () => {
             onClick={toggleDropdown}
           >
             <span className="sr-only">Open user menu</span>
-            <img className="w-8 h-8 rounded-full border-2 border-blue-500 shadow-md" src={userImage} alt="User profile"/>
+            <img className="w-10 h-10 rounded-full border-2 border-gray-200 shadow-md" src={userImage} alt="User profile"/>
+
           </button>
 
           {isDropdownOpen && (

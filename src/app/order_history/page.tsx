@@ -13,7 +13,7 @@ import AnimatedComponent from "../component/AnimatedComponent";
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCodeIcon } from 'lucide-react';
 import {QRModal} from "../component/QrModal"
-
+import { useRouter } from 'next/navigation';
 type OrderStatus = "pending" | "reviewed" | "accepted" | "rejected" | "assigned" | "picked" |  "delivered";
 
 // type OrderStatus = "pending" | "reviewed" | "accepted" | "rejected" | "assigned" | "picked" | "onway" | "delivered";
@@ -335,7 +335,7 @@ const OrderHistoryPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
-
+  const router = useRouter();
   const [qrModalData, setQrModalData] = useState<{
     isOpen: boolean;
     orderId: string;
@@ -876,8 +876,25 @@ const OrderHistoryPage = () => {
               status={selectedOrder.status} 
               timestamps={selectedOrder.timestamps} 
             />
+
+          <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => {
+            router.push(`/order_history/feedbacktrack/${selectedOrder.id}`);
+
+          }}
+
+          className="bg-gradient-to-r from-gray-500 to-gray-900 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center"
+
+          >
+
+          FeedBack
+
+          </motion.button>
           </div>
-          
+  
+
           {/* Right side: Order Summary & Animation */}
           <div className="md:w-1/2 flex flex-col">
             <div className="bg-gray-50 p-4 rounded-lg mb-4">

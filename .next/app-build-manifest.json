@@ -11,25 +11,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/page.js"
     ],
+    "/order_history/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/order_history/page.js"
+    ],
     "/store/[storeId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/store/[storeId]/page.js"
     ],
-    "/store/[storeId]/product/[productId]/page": [
+    "/order_history/feedbacktrack/[orderid]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/store/[storeId]/product/[productId]/page.js"
-    ],
-    "/store/Cart/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/store/Cart/page.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/order_history/feedbacktrack/[orderid]/page.js"
     ]
   }
 }
