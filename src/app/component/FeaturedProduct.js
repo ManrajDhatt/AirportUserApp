@@ -8,6 +8,7 @@ const storeBackgrounds = {
   tanishq: "/images/airport_images/Tanishqhd.jpeg",
   zara: "/images/airport_images/zarahd.jpg",
   haldirams: "/images/airport_images/haldiramhd.jpeg",
+  Lego : "/images/airport_images/haldiramhd.jpeg",
   
 };
 

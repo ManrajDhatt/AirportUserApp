@@ -104,21 +104,35 @@ const Navbar = () => {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute top-7 left-5 z-50 bg-white shadow-lg rounded-lg w-40 py-1">
-              <ul className="text-gray-700">
-                {isLoggedIn ? (
-                  <>
-                    <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Dashboard</a></li>
-                    <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Settings</a></li>
-                    <li><a href="#" className="block px-4 py-2 text-center hover:bg-gray-100">Earnings</a></li>
-                    <li><button onClick={handleAuthAction} className="block w-full text-center px-4 py-2 hover:bg-gray-100">Logout</button></li>
-                  </>
-                ) : (
-                  <li><button onClick={handleAuthAction} className="block w-full px-4 py-2 text-center hover:bg-gray-100">Login</button></li>
-                )}
-              </ul>
-            </div>
-          )}
+  <div className="absolute top-10 left-0 z-50 bg-white shadow-xl rounded-lg w-48 py-2 transition-all duration-200 ease-in-out border border-gray-100">
+    <ul className="text-gray-700 divide-y divide-gray-100">
+      {isLoggedIn ? (
+        <>
+         
+          
+          <li>
+            <button
+              onClick={handleAuthAction}
+              className="w-full text-left px-5 py-2 text-sm text-red-600 hover:bg-gray-100 transition-all"
+            >
+              Logout
+            </button>
+          </li>
+        </>
+      ) : (
+        <li>
+          <button
+            onClick={handleAuthAction}
+            className="w-full px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all text-left"
+          >
+            Login
+          </button>
+        </li>
+      )}
+    </ul>
+  </div>
+)}
+
         </div>
       </div>
     </nav>

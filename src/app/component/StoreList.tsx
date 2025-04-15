@@ -32,6 +32,7 @@ export default function StoreList({ stores }: { stores: Store[] }) {
     "Shoes": "/images/airport_images/shoes.png",
     "Watches": "/images/airport_images/watches.png",
     "Food": "/images/airport_images/ffoodd.jpg",
+    "toys":"/images/airport_images/toys.jpeg",
   };
 
   const uniqueCategories = [...new Set(stores.map((store) => store.category))].map((category) => ({
