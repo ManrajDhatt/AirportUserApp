@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiChevronDown, FiShoppingBag } from "react-icons/fi";
 import { db } from "@/app/lib/firebase";
