@@ -8,11 +8,11 @@ export default function Footer() {
 					<div className="mb-6 md:mb-0">
 						<a href="/" className="flex items-center">
 							<img
-								 src="/images/airport_images/Untitled design.png" className="h-24 w-auto me-3" alt="Brand Logo" />
+								 src="/runwayRetail_logo.jpg" className="h-24 w-auto me-3" alt="Brand Logo" />
 
 							
 							<span className="self-center text-2xl font-semibold whitespace-nowrap">
-								Flyair
+								RunwayRetail
 							</span>
 						</a>
 					</div>

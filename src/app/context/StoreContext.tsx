@@ -183,74 +183,105 @@
 //   return context;
 // };
 
-
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
-const StoreContext = createContext({
+// Define CartItem interface
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  storeId: string;
+  quantity: number;
+  productImageUrl: string;
+  productDescription: string;
+  CategoryName: string;
+  CategoryId: string;
+}
+
+// Define Product interface
+interface Product {
+  id: string;
+  price: string;
+  productImageUrl?: string;
+  catalogueProductName: string;
+  catalogueCategoryId: string;
+  productDescription?: string;
+  stock: string;
+  discount?: number;
+  finalPrice?: string;
+}
+
+// Define StoreContextType
+interface StoreContextType {
+  likedItems: any[];
+  cartItems: CartItem[];
+  toggleLike: () => void;
+  addToCart: (item: CartItem, storeId: string, quantity?: number) => void; // Changed to CartItem
+  removeFromCart: (id: string) => void;
+  updateCartQuantity: (id: string, newQuantity: number) => void;
+  clearCart: () => void;
+  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
+  selectedProduct: Product | null;
+  setSelectedProduct: React.Dispatch<React.SetStateAction<Product | null>>;
+}
+
+// Create context
+const StoreContext = createContext<StoreContextType>({
   likedItems: [],
   cartItems: [],
   toggleLike: () => {},
   addToCart: () => {},
-  removeFromCart: (id) => {},
-  updateCartQuantity: (id, newQuantity) => {},
+  removeFromCart: () => {},
+  updateCartQuantity: () => {},
   clearCart: () => {},
   setCartItems: () => {},
   selectedProduct: null,
   setSelectedProduct: () => {},
 });
 
-export function StoreProvider({ children }) {
-  const [likedItems, setLikedItems] = useState([]);
-  const [cartItems, setCartItems] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+interface StoreProviderProps {
+  children: ReactNode;
+}
 
-  // Load cart from localStorage on mount
+export function StoreProvider({ children }: StoreProviderProps) {
+  const [likedItems, setLikedItems] = useState<any[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Load cart from localStorage
   useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
-    setCartItems(storedCart);
+    const storedCart: CartItem[] = JSON.parse(localStorage.getItem("cartItems") || "[]");
+    setCartItems(storedCart.filter((item) => item.id && item.storeId && item.CategoryId));
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product, storeId, quantity = 1) => {
-    const existingItem = cartItems.find((item) => item.id === product.id);
-
-    let updatedCartItems;
-    if (existingItem) {
-      updatedCartItems = cartItems.map((item) =>
-        item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
-      );
-    } else {
-      updatedCartItems = [
-        ...cartItems,
-        {
-          id: product.id,
-          name: product.catalogueProductName,
-          // price: parseFloat(product.price.replace("$", "")) || 0,
-          price: parseFloat(product.price.replace(/[$,]/g, "")) || 0,
-
-          storeId: storeId,
-          quantity,
-          productImageUrl: product.productImageUrl,
-          productDescription: product.productDescription,
-          CategoryName: product.catalogueCategoryName,
-          CategoryId: product.catalogueCategoryId,
-        },
-      ];
+  const addToCart = (item: CartItem, storeId: string, quantity = 1) => {
+    if (!item.id || !item.CategoryId) {
+      console.warn("Invalid cart item data:", item);
+      return;
     }
+
+    const existingItem = cartItems.find((cartItem) => cartItem.id === item.id);
+
+    const updatedCartItems: CartItem[] = existingItem
+      ? cartItems.map((cartItem) =>
+          cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + quantity } : cartItem
+        )
+      : [...cartItems, { ...item, storeId, quantity }];
 
     setCartItems(updatedCartItems);
   };
 
-  const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  const removeFromCart = (id: string) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
-  const updateCartQuantity = (id, newQuantity) => {
+  const updateCartQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeFromCart(id);
       return;
@@ -267,11 +298,11 @@ export function StoreProvider({ children }) {
       value={{
         likedItems,
         cartItems,
+        toggleLike: () => {}, // Placeholder
         addToCart,
         removeFromCart,
         updateCartQuantity,
-        clearCart: () => setCartItems([]), // Add this
-
+        clearCart: () => setCartItems([]),
         setCartItems,
         selectedProduct,
         setSelectedProduct,
@@ -289,3 +320,131 @@ export const useStore = () => {
   }
   return context;
 };
+
+// "use client";
+// import { createContext, useContext, useState, useEffect } from "react";
+
+// const StoreContext = createContext({
+//   likedItems: [],
+//   cartItems: [],
+//   toggleLike: () => {},
+//   addToCart: () => {},
+//   removeFromCart: (id) => {},
+//   updateCartQuantity: (id, newQuantity) => {},
+//   clearCart: () => {},
+//   setCartItems: () => {},
+//   selectedProduct: null,
+//   setSelectedProduct: () => {},
+// });
+// // Normalizes price to a float value regardless of input format
+// function normalizePrice(price) {
+//   if (typeof price === 'number') {
+//     return price; // already a number, no action needed
+//   }
+
+//   if (typeof price === 'string') {
+//     // Remove currency symbols (₹, $, etc.), commas, and whitespace
+//     const cleaned = price.replace(/[^\d.-]+/g, '');
+//     const parsed = parseFloat(cleaned);
+
+//     // Return parsed if valid, otherwise fallback
+//     return isNaN(parsed) ? 0 : parsed;
+//   }
+
+//   // If price is neither number nor string, fallback to 0
+//   return 0;
+// }
+
+// export function StoreProvider({ children }) {
+//   const [likedItems, setLikedItems] = useState([]);
+//   const [cartItems, setCartItems] = useState([]);
+//   const [selectedProduct, setSelectedProduct] = useState(null);
+
+//   // Load cart from localStorage on mount
+//   // useEffect(() => {
+//   //   const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+//   //   setCartItems(storedCart);
+//   // }, []);
+// useEffect(() => {
+//   const storedCart = JSON.parse(localStorage.getItem("cartItems")) || [];
+//   setCartItems(storedCart.filter(item => item.id && item.storeId && item.CategoryId));
+// }, []);
+//   // Save cart to localStorage whenever it changes
+//   useEffect(() => {
+//     localStorage.setItem("cartItems", JSON.stringify(cartItems));
+//   }, [cartItems]);
+
+//   const addToCart = (product, storeId, quantity = 1) => {
+//     const existingItem = cartItems.find((item) => item.id === product.id);
+
+//     let updatedCartItems;
+//     if (existingItem) {
+//       updatedCartItems = cartItems.map((item) =>
+//         item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+//       );
+//     } else {
+//       // price: parseFloat(product.price.replace("$", "")) || 0,
+//           // price: parseFloat(product.price.replace(/[$,]/g, "")) || 0,
+//       updatedCartItems = [
+//         ...cartItems,
+//         {
+//           id: product.id,
+//           name: product.catalogueProductName,
+          
+//           price:normalizePrice(product.price),
+//           storeId: storeId,
+//           quantity,
+//           productImageUrl: product.productImageUrl,
+//           productDescription: product.productDescription,
+//           CategoryName: product.catalogueCategoryName,
+//           CategoryId: product.catalogueCategoryId,
+//         },
+//       ];
+//     }
+
+//     setCartItems(updatedCartItems);
+//   };
+
+//   const removeFromCart = (id) => {
+//     setCartItems((prev) => prev.filter((item) => item.id !== id));
+//   };
+
+//   const updateCartQuantity = (id, newQuantity) => {
+//     if (newQuantity <= 0) {
+//       removeFromCart(id);
+//       return;
+//     }
+//     setCartItems((prevItems) =>
+//       prevItems.map((item) =>
+//         item.id === id ? { ...item, quantity: newQuantity } : item
+//       )
+//     );
+//   };
+
+//   return (
+//     <StoreContext.Provider
+//       value={{
+//         likedItems,
+//         cartItems,
+//         addToCart,
+//         removeFromCart,
+//         updateCartQuantity,
+//         clearCart: () => setCartItems([]), // Add this
+
+//         setCartItems,
+//         selectedProduct,
+//         setSelectedProduct,
+//       }}
+//     >
+//       {children}
+//     </StoreContext.Provider>
+//   );
+// }
+
+// export const useStore = () => {
+//   const context = useContext(StoreContext);
+//   if (!context) {
+//     throw new Error("useStore must be used within a StoreProvider");
+//   }
+//   return context;
+// };

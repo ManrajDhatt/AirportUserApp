@@ -415,40 +415,35 @@
 
 
 
-
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useStore } from "../../context/StoreContext";
 import Image from "next/image";
 import { db } from "../../lib/firebase";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { BsTrash } from "react-icons/bs";
 import PlaceOrderButton from "@/app/component/PlaceOrder";
 
-interface Product {
+// Define CartItem interface to match StoreContext and Cards
+interface CartItem {
   id: string;
-  price: string;
-  quantity: number;
   name: string;
-  productImageUrl: string;
-  catalogueProductName: string;
+  price: number;
   storeId: string;
-  storeName: string;
+  quantity: number;
+  productImageUrl: string;
+  productDescription: string;
+  CategoryName: string;
+  CategoryId: string;
 }
 
 const CartPage = () => {
   const router = useRouter();
-  const { 
-    cartItems, 
-    updateCartQuantity, 
-    removeFromCart, 
-    clearCart 
-  } = useStore();
-  
+  const { cartItems, updateCartQuantity, removeFromCart, clearCart } = useStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [stockWarning, setStockWarning] = useState<{ id: string, message: string } | null>(null);
+  const [stockWarning, setStockWarning] = useState<{ id: string; message: string } | null>(null);
   const [productStock, setProductStock] = useState<Record<string, number>>({});
   const TAX_RATE = 0.10;
 
@@ -456,107 +451,102 @@ const CartPage = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
   // Fetch product stock from Firebase
-// Update your fetchProductStock useEffect hook like this:
-useEffect(() => {
-  const fetchProductStock = async () => {
-    if (cartItems.length === 0) {
-      setIsLoading(false);
-      return;
-    }
+  useEffect(() => {
+    const fetchProductStock = async () => {
+      if (cartItems.length === 0) {
+        setIsLoading(false);
+        return;
+      }
 
-    try {
-      const stockData: Record<string, number> = {};
-      
-      // Create an array of promises for all stock fetches
-      const stockPromises = cartItems.map(async (item) => {
-        try {
-          // Correct path based on your Firestore structure
-          // stores/{storeId}/categories/{categoryId}/products/{productId}
-          const productRef = doc(
-            db,
-            "stores",
-            item.storeId,
-            "categories",
-            item.CategoryId,
-            "products",
-            item.id
-          );
-          const productSnap = await getDoc(productRef);
+      try {
+        const stockData: Record<string, number> = {};
 
-          if (productSnap.exists()) {
-            const stock = productSnap.data().stock;
-            stockData[item.id] = stock !== undefined ? stock : 0; // Default to 0 if stock is undefined
-          } else {
-            stockData[item.id] = 0; // Product not found, assume out of stock
+        const stockPromises = cartItems.map(async (item: CartItem) => {
+          try {
+            if (!item.storeId || !item.CategoryId || !item.id) {
+              console.warn(`Invalid cart item:`, item);
+              stockData[item.id || "unknown"] = 0;
+              return;
+            }
+
+            const productRef = doc(
+              db,
+              "stores",
+              item.storeId,
+              "categories",
+              item.CategoryId,
+              "products",
+              item.id
+            );
+            const productSnap = await getDoc(productRef);
+
+            if (productSnap.exists()) {
+              const stock = productSnap.data().stock;
+              stockData[item.id] = stock !== undefined ? stock : 0;
+            } else {
+              stockData[item.id] = 0;
+            }
+          } catch (err) {
+            console.error(`Failed to fetch stock for ${item.id || "unknown"}:`, err);
+            stockData[item.id || "unknown"] = 0;
           }
-        } catch (err) {
-          console.error(`Failed to fetch stock for ${item.id}:`, err);
-          stockData[item.id] = 0; // On error, assume out of stock
-        }
-      });
+        });
 
-      // Wait for all stock fetches to complete
-      await Promise.all(stockPromises);
-      
-      setProductStock(stockData);
-    } catch (error) {
-      console.error("Error fetching stock data:", error);
-      // On major error, set all to 0 to prevent over-selling
-      const defaultStock: Record<string, number> = {};
-      cartItems.forEach(item => {
-        defaultStock[item.id] = 0;
-      });
-      setProductStock(defaultStock);
-    } finally {
-      setIsLoading(false);
+        await Promise.all(stockPromises);
+        setProductStock(stockData);
+      } catch (error) {
+        console.error("Error fetching stock data:", error);
+        const defaultStock: Record<string, number> = {};
+        cartItems.forEach((item) => {
+          defaultStock[item.id || "unknown"] = 0;
+        });
+        setProductStock(defaultStock);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isMounted) {
+      fetchProductStock();
     }
-  };
+  }, [cartItems, isMounted]);
 
-  if (isMounted) {
-    fetchProductStock();
-  }
-}, [cartItems, isMounted]);
   // Auto-dismiss stock warning after 3 seconds
   useEffect(() => {
     if (stockWarning) {
       const timer = setTimeout(() => {
         setStockWarning(null);
       }, 3000);
-      
       return () => clearTimeout(timer);
     }
   }, [stockWarning]);
 
-  const parsePrice = (price?: string | number) => 
-    typeof price === "string" 
-        ? Number(price.replace(/₹|,/g, "").trim()) // Remove ₹ and ,
-        : price || 0;
-        
+  const parsePrice = (price: number) => price || 0;
+
   const subtotal = cartItems.reduce(
-    (sum: number, product: Product) => sum + parsePrice(product.price) * product.quantity,
+    (sum: number, product: CartItem) => sum + parsePrice(product.price) * product.quantity,
     0
   );
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax;
 
   // Function to handle quantity increase with stock check
-  const handleIncreaseQuantity = (product: Product) => {
+  const handleIncreaseQuantity = (product: CartItem) => {
     const availableStock = productStock[product.id] || 0;
-    
     if (product.quantity >= availableStock) {
-      setStockWarning({ 
-        id: product.id, 
-        message: `Only ${availableStock} items available in stock!` 
+      setStockWarning({
+        id: product.id,
+        message: `Only ${availableStock} items available in stock!`,
       });
       return;
     }
-    
     updateCartQuantity(product.id, product.quantity + 1);
   };
-  
+
   if (!isMounted) return null;
-  
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-12 min-h-screen flex items-center justify-center">
@@ -570,10 +560,7 @@ useEffect(() => {
   return (
     <div className="container mx-auto px-4 py-6 min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">
-          Your Cart
-        </h1>
-
+        <h1 className="text-2xl font-semibold text-gray-800 mb-6 border-b pb-3">Your Cart</h1>
         {cartItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center space-y-6 mt-16">
             <Image
@@ -584,9 +571,7 @@ useEffect(() => {
               priority
               className="max-w-xs opacity-70"
             />
-            <p className="text-gray-500 text-lg">
-              Your cart is empty
-            </p>
+            <p className="text-gray-500 text-lg">Your cart is empty</p>
             <button
               onClick={() => router.push("/")}
               className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
@@ -597,7 +582,7 @@ useEffect(() => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-4">
-              {cartItems.map((product: Product) => (
+              {cartItems.map((product: CartItem) => (
                 <div
                   key={product.id}
                   className="relative flex items-center bg-white border rounded-lg p-5 shadow-sm"
@@ -610,15 +595,13 @@ useEffect(() => {
                   </button>
                   <Image
                     src={product.productImageUrl}
-                    alt={product.catalogueProductName || "Product image"}
+                    alt={product.name || "Product image"}
                     width={100}
                     height={100}
                     className="w-24 h-24 object-cover rounded-md mr-5"
                   />
                   <div className="flex-grow">
-                    <h3 className="text-gray-800 font-medium text-lg">
-                      {product.name}
-                    </h3>
+                    <h3 className="text-gray-800 font-medium text-lg">{product.name}</h3>
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex flex-col">
                         <div className="flex items-center space-x-2">
@@ -631,9 +614,7 @@ useEffect(() => {
                           >
                             -
                           </button>
-                          <span className="w-8 text-center text-gray-700">
-                            {product.quantity}
-                          </span>
+                          <span className="w-8 text-center text-gray-700">{product.quantity}</span>
                           <button
                             onClick={() => handleIncreaseQuantity(product)}
                             className="w-8 h-8 border rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100"
@@ -662,7 +643,6 @@ useEffect(() => {
                 </div>
               ))}
             </div>
-
             <div className="bg-white border rounded-lg p-6 h-fit">
               <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
                 Order Summary
@@ -681,8 +661,7 @@ useEffect(() => {
                   <span>₹{total.toFixed(2)}</span>
                 </div>
               </div>
-            
-              <PlaceOrderButton/>
+              <PlaceOrderButton />
             </div>
           </div>
         )}
@@ -692,9 +671,6 @@ useEffect(() => {
 };
 
 export default CartPage;
-
-
-
 
 
 

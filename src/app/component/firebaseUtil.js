@@ -70,16 +70,31 @@ export const getCategoriesForStore = async (storeID) => {
 };
 
 // ✅ Fetch all products for a specific category in a store
-export const getProductsForCategory = async (storeID, categoryID) => {
-	try {
-		const productsRef = collection(db, `stores/${storeID}/categories/${categoryID}/products`);
-		const querySnapshot = await getDocs(productsRef);
+// export const getProductsForCategory = async (storeID, categoryID) => {
+// 	try {
+// 		const productsRef = collection(db, `stores/${storeID}/categories/${categoryID}/products`);
+// 		const querySnapshot = await getDocs(productsRef);
 
-		return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-	} catch (error) {
-		console.error("❌ Error fetching products:", error);
-		return [];
-	}
+// 		return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+// 	} catch (error) {
+// 		console.error("❌ Error fetching products:", error);
+// 		return [];
+// 	}
+// };
+export const getProductsForCategory = async (storeID, categoryID) => {
+  try {
+    const productsRef = collection(db, `stores/${storeID}/categories/${categoryID}/products`);
+    const querySnapshot = await getDocs(productsRef);
+
+    return querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      catalogueCategoryId: doc.data().catalogueCategoryId || categoryID, // Fallback to categoryID
+    }));
+  } catch (error) {
+    console.error("❌ Error fetching products:", error);
+    return [];
+  }
 };
 
 // ✅ Fetch product details by ID

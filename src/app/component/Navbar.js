@@ -64,7 +64,7 @@ const Navbar = () => {
     <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur-lg shadow-lg rounded-full px-6 flex items-center justify-between w-[100%] max-w-md border border-gray-300 z-50">
       <div className="flex items-center space-x-6">
         <Link href="/">
-          <img src="/images/airport_images/Untitled design.png" alt="Brand Logo" className="h-16 w-auto" />
+          <img src="/runwayRetail_logo-removebg-preview.png" alt="Brand Logo" className="h-16 w-auto rounded-full" />
         </Link>
         <Link href="/" className="hover:text-[#7C85F6] transition text-black text-lg font-medium">Home</Link>
 
@@ -80,9 +80,9 @@ const Navbar = () => {
         <Link href="/store/Cart">
           <div className="relative cursor-pointer">
             {cartItems.length > 0 ? (
-              <BsCartPlusFill className="text-xl text-gray-500" />
+              <BsCartPlusFill className="text-xl text-blue-500" />
             ) : (
-              <BsCartPlus className="text-xl text-gray-700" />
+              <BsCartPlus className="text-xl text-black" />
             )}
             {cartItems.length > 0 && (
               <span className="absolute -top-1 -right-1 bg-gray-900 text-white text-xs rounded-full px-1">
