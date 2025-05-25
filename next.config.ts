@@ -1,11 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Fix for missing static assets
+  // Optional: if you host under a subpath, otherwise usually empty
   assetPrefix: process.env.NODE_ENV === "production" ? "/_next/" : "",
 
+  output: 'standalone', // helps Vercel optimize the build
+
   webpack: (config) => {
-    config.output.clean = true; // Ensures stale chunks are cleaned up
+    config.output.clean = true; // clean old chunks
     return config;
   },
 
