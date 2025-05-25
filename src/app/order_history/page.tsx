@@ -636,7 +636,7 @@ const OrderHistoryPage = () => {
         transition={{ duration: 0.5 }}
         className="mb-8 text-center"
       >
-        <h1 className="text-4xl font-extrabold mb-2 bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-extrabold mb-2 bg-gradient-to-r from-gray-600 to-gray-900 bg-clip-text text-transparent">
           Your Orders
         </h1>
         <p className="text-gray-600">Track and manage your purchase history</p>
@@ -691,7 +691,7 @@ const OrderHistoryPage = () => {
                       {order.createdAt}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">Order #{order.id.substring(0, 8)}</p>
-                    <div className={`px-4 py-2 rounded-full font-medium ${getStatusColor(order.status)}`}>
+                    <div className={`px-4 py-2 rounded-full font-medium mt-2 w-fit ${getStatusColor(order.status)}`}>
                     {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                   </div>
                   
@@ -712,7 +712,7 @@ const OrderHistoryPage = () => {
         qrData
       });
     }}
-    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center "
+    className="bg-gradient-to-r from-gray-500 to-gray-900 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center "
   >
     <QrCodeIcon className="w-4 h-4 mr-2" />
     Show QR
@@ -814,7 +814,7 @@ const OrderHistoryPage = () => {
                       setSelectedOrder(order);
                       setIsTimelineOpen(true);
                     }}
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center"
+                    className="bg-gradient-to-r from-gray-500 to-gray-900 text-white px-5 py-2 rounded-full hover:shadow-lg transition font-medium flex items-center"
                   >
                     <Truck className="w-4 h-4 mr-2" />
                     Track Order
